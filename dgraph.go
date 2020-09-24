@@ -6,13 +6,14 @@ import (
 	"log"
 	"time"
 
+	// version of dgraph to import
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"google.golang.org/grpc"
 )
 
-//+ NewClient
-// establish connection and return
+//!+NewClient establish a new connection
+//TODO: implement security
 func NewClient(ip string) *dgo.Dgraph {
 	// Dial a gRPC connection. The address to dial to can be configured when
 	// setting up the dgraph cluster.
@@ -26,10 +27,9 @@ func NewClient(ip string) *dgo.Dgraph {
 	)
 }
 
-//!+ Query
-// connect and query
-// param s: the query u want to run
-// return: resp as []byte
+//!-NewClient
+
+//!+Query
 func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 	start := time.Now()
 
@@ -42,19 +42,16 @@ func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 	return resp.GetJson(), nil
 }
 
-//!- Query
+//!-Query
 
-//!+ Mutate
-// Mutate sends a mutation request to the dgraph server
+//!+Mutate send a mutation to dgraph
 func Mutate(dg *dgo.Dgraph, pb []byte) error {
 	start := time.Now()
 	mu := &api.Mutation{
 		CommitNow: true,
 		SetJson:   pb,
 	}
-	// TODO: check resp
-	resp, err := dg.NewTxn().Mutate(context.Background(), mu)
-	fmt.Println(resp.Json)
+	_, err := dg.NewTxn().Mutate(context.Background(), mu)
 	if err != nil {
 		return fmt.Errorf("migrating new schema: %v", err)
 	}
@@ -63,10 +60,9 @@ func Mutate(dg *dgo.Dgraph, pb []byte) error {
 	return nil
 }
 
-//!- Mutate
+//!-Mutate
 
-//!+ Migrate
-// Migrate alter the database schema
+//!+Migrate alter the schema on the database
 func Migrate(dg *dgo.Dgraph, schema string) error {
 	op := &api.Operation{}
 	op.Schema = schema
@@ -78,4 +74,4 @@ func Migrate(dg *dgo.Dgraph, schema string) error {
 	return nil
 }
 
-//!- Migrate
+//!-Migrate
