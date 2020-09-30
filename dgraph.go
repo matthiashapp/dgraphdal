@@ -10,6 +10,7 @@ import (
 	"github.com/dgraph-io/dgo/v200"
 	"github.com/dgraph-io/dgo/v200/protos/api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 //!+NewClient establish a new connection
@@ -51,6 +52,7 @@ func Mutate(dg *dgo.Dgraph, pb []byte) error {
 		CommitNow: true,
 		SetJson:   pb,
 	}
+
 	_, err := dg.NewTxn().Mutate(context.Background(), mu)
 	if err != nil {
 		return fmt.Errorf("migrating new schema: %v", err)
@@ -63,11 +65,11 @@ func Mutate(dg *dgo.Dgraph, pb []byte) error {
 //!-Mutate
 
 //!+Migrate alter the schema on the database
-func Migrate(dg *dgo.Dgraph, schema string) error {
-	op := &api.Operation{}
-	op.Schema = schema
-	ctx := context.Background()
-	err := dg.Alter(ctx, op)
+func Migrate(dg *dgo.Dgraph, schema, token string) error {
+	md := metadata.New(nil)
+	md.Append("auth-token", token)
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	err := dg.Alter(ctx, &api.Operation{Schema: schema})
 	if err != nil {
 		return fmt.Errorf("migrating schema: %v", err)
 	}
