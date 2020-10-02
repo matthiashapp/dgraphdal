@@ -15,17 +15,13 @@ import (
 
 //!+NewClient establish a new connection
 //TODO: implement security
-func NewClient(ip string) *dgo.Dgraph {
-	// Dial a gRPC connection. The address to dial to can be configured when
-	// setting up the dgraph cluster.
+func NewClient(ip string) (*dgo.Dgraph, error) {
+	//TODO: implement security
 	d, err := grpc.Dial(ip, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("grpc dial %s: %v", ip, err)
+		return nil, fmt.Errorf("error grpc dial %s: %v", ip, err)
 	}
-
-	return dgo.NewDgraphClient(
-		api.NewDgraphClient(d),
-	)
+	return dgo.NewDgraphClient(api.NewDgraphClient(d)), nil
 }
 
 //!-NewClient
@@ -45,7 +41,7 @@ func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 
 //!-Query
 
-//!+Mutate send a mutation to dgraph
+//!+Mutate
 func Mutate(dg *dgo.Dgraph, pb []byte) error {
 	start := time.Now()
 	mu := &api.Mutation{
@@ -64,7 +60,7 @@ func Mutate(dg *dgo.Dgraph, pb []byte) error {
 
 //!-Mutate
 
-//!+Migrate alter the schema on the database
+//!+Migrate the schema on the database
 func Migrate(dg *dgo.Dgraph, schema, token string) error {
 	md := metadata.New(nil)
 	md.Append("auth-token", token)
