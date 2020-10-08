@@ -7,8 +7,8 @@ import (
 	"time"
 
 	// version of dgraph to import
-	"github.com/dgraph-io/dgo/v200"
-	"github.com/dgraph-io/dgo/v200/protos/api"
+	"github.com/dgraph-io/dgo/v2"
+	"github.com/dgraph-io/dgo/v2/protos/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
@@ -16,7 +16,6 @@ import (
 //!+NewClient establish a new connection
 //TODO: implement security
 func NewClient(ip string) (*dgo.Dgraph, error) {
-	//TODO: implement security
 	d, err := grpc.Dial(ip, grpc.WithInsecure())
 	if err != nil {
 		return nil, fmt.Errorf("error grpc dial %s: %v", ip, err)
@@ -29,12 +28,10 @@ func NewClient(ip string) (*dgo.Dgraph, error) {
 //!+Query
 func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 	start := time.Now()
-
 	resp, err := dg.NewTxn().Query(context.Background(), s)
 	if err != nil {
 		return nil, fmt.Errorf("query : %v", err)
 	}
-
 	log.Println(time.Since(start))
 	return resp.GetJson(), nil
 }
