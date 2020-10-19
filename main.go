@@ -39,23 +39,43 @@ func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 //!-Query
 
 //!+Mutate
-func Mutate(dg *dgo.Dgraph, pb []byte) error {
+// this will run a mutation not a DELETE operation !!
+func Mutate(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	start := time.Now()
 	mu := &api.Mutation{
 		CommitNow: true,
 		SetJson:   pb,
 	}
 
-	_, err := dg.NewTxn().Mutate(context.Background(), mu)
+	resp, err := dg.NewTxn().Mutate(context.Background(), mu)
 	if err != nil {
-		return fmt.Errorf("migrating new schema: %v", err)
+		return nil, fmt.Errorf("migrating new schema: %v", err)
 	}
 
 	log.Println(time.Since(start))
-	return nil
+	return resp, nil
 }
 
 //!-Mutate
+
+//!+Delete
+func Delete(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
+	start := time.Now()
+	mu := &api.Mutation{
+		CommitNow:  true,
+		DeleteJson: pb,
+	}
+
+	resp, err := dg.NewTxn().Mutate(context.Background(), mu)
+	if err != nil {
+		return nil, fmt.Errorf("migrating new schema: %v", err)
+	}
+
+	log.Println(time.Since(start))
+	return resp, nil
+}
+
+//!-Delete
 
 //!+Migrate the schema on the database
 func Migrate(dg *dgo.Dgraph, schema, token string) error {
