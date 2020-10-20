@@ -3,10 +3,9 @@ package dgraphdal
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
 
 	// version of dgraph to import
+	// old version require a diffrent client
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
 	"google.golang.org/grpc"
@@ -27,12 +26,10 @@ func NewClient(ip string) (*dgo.Dgraph, error) {
 
 //!+Query
 func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
-	start := time.Now()
 	resp, err := dg.NewTxn().Query(context.Background(), s)
 	if err != nil {
 		return nil, fmt.Errorf("query : %v", err)
 	}
-	log.Println(time.Since(start))
 	return resp.GetJson(), nil
 }
 
@@ -41,7 +38,6 @@ func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 //!+Mutate
 // this will run a mutation not a DELETE operation !!
 func Mutate(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
-	start := time.Now()
 	mu := &api.Mutation{
 		CommitNow: true,
 		SetJson:   pb,
@@ -51,8 +47,6 @@ func Mutate(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("migrating new schema: %v", err)
 	}
-
-	log.Println(time.Since(start))
 	return resp, nil
 }
 
@@ -60,7 +54,6 @@ func Mutate(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 
 //!+Delete
 func Delete(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
-	start := time.Now()
 	mu := &api.Mutation{
 		CommitNow:  true,
 		DeleteJson: pb,
@@ -70,8 +63,6 @@ func Delete(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("migrating new schema: %v", err)
 	}
-
-	log.Println(time.Since(start))
 	return resp, nil
 }
 
