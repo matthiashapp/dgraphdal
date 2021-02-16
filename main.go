@@ -5,15 +5,16 @@ import (
 	"fmt"
 
 	// version of dgraph to import
-	// old version require a diffrent client
+	// old versions require a diffrent client of dgraph
 	"github.com/dgraph-io/dgo/v2"
 	"github.com/dgraph-io/dgo/v2/protos/api"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 )
 
-//!+NewClient establish a new connection
-//TODO: implement security
+// !+NewClient establish a new connection
+// TODO: implement security
+//
 func NewClient(ip string) (*dgo.Dgraph, error) {
 	d, err := grpc.Dial(ip, grpc.WithInsecure())
 	if err != nil {
@@ -22,9 +23,11 @@ func NewClient(ip string) (*dgo.Dgraph, error) {
 	return dgo.NewDgraphClient(api.NewDgraphClient(d)), nil
 }
 
-//!-NewClient
+// !-NewClient
 
-//!+Query
+// !+Query
+// run a query on dgraph
+// return result and error
 func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 	resp, err := dg.NewTxn().Query(context.Background(), s)
 	if err != nil {
@@ -33,10 +36,11 @@ func Query(dg *dgo.Dgraph, s string) ([]byte, error) {
 	return resp.GetJson(), nil
 }
 
-//!-Query
+// !-Query
 
-//!+Mutate
-// this will run a mutation not a DELETE operation !!
+// !+Mutate
+// Mutate (Update or Create) an edge
+// return -> response ( operation details), error what may have gone wrong
 func Mutate(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	mu := &api.Mutation{
 		CommitNow: true,
@@ -50,9 +54,11 @@ func Mutate(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	return resp, nil
 }
 
-//!-Mutate
+// !-Mutate
 
-//!+Delete
+// !+Delete
+// delete an edge
+// return -> response(operation details) , discriptive error what may have gone wrong
 func Delete(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	mu := &api.Mutation{
 		CommitNow:  true,
@@ -66,9 +72,11 @@ func Delete(dg *dgo.Dgraph, pb []byte) (*api.Response, error) {
 	return resp, nil
 }
 
-//!-Delete
+// !-Delete
 
-//!+Migrate the schema on the database
+// !+Migrate
+// alter the schema on the database
+// must insert auth token when u set it on dgraph otherwise give it an empty string
 func Migrate(dg *dgo.Dgraph, schema, token string) error {
 	md := metadata.New(nil)
 	md.Append("auth-token", token)
@@ -80,4 +88,4 @@ func Migrate(dg *dgo.Dgraph, schema, token string) error {
 	return nil
 }
 
-//!-Migrate
+// !-Migrate
